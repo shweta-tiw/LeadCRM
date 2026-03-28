@@ -1,7 +1,30 @@
-﻿################################################################################
-# This .gitignore file was automatically created by Microsoft(R) Visual Studio.
-################################################################################
+﻿# Visual Studio files
+.vs/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
 
-/crm managem/Controllers/SalesController.cs
+# Build folders
+bin/
+obj/
+
+# Packages
+*.nupkg
+*.snupkg
+packages/
+
+# Publish outputs
+*.Publish.xml
+*.log
+
+# VS Code
+.vscode/
+
+# Others
+*.dbmdl
+*.pdb
+*.cache
+
 # Ignore sensitive config files
 Web.config

@@ -1,0 +1,295 @@
+﻿@model System.Data.DataTable
+@using System.Data
+
+@{
+    ViewBag.Title = "Leads Dashboard";
+  
+    Layout = null;
+}
+
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title>Leads Dashboard</title>
+
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
+
+    <!-- jQuery -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+    <!-- SweetAlert2 -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <style>
+        body {
+            background: #f0f2f5;
+            font-family: 'Segoe UI', sans-serif;
+        }
+
+        .card-metrics {
+            border-radius: 12px;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.08);
+            transition: 0.3s;
+            cursor: pointer;
+        }
+
+            .card-metrics:hover {
+                transform: translateY(-5px);
+                box-shadow: 0 15px 30px rgba(0,0,0,0.15);
+            }
+
+        #searchBox {
+            border-radius: 20px;
+            padding: 10px;
+        }
+
+        .table-container {
+            background: #fff;
+            padding: 20px;
+            border-radius: 15px;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.08);
+        }
+
+        .table thead {
+            background: #4e73df;
+            color: #fff;
+        }
+
+        .table tbody tr:hover {
+            background: rgba(78,115,223,0.1);
+        }
+
+        .status-dropdown {
+            width: 120px;
+        }
+    </style>
+</head>
+<body>
+    @{
+        string userName = Session["FullName"]?.ToString() ?? "Guest";
+        string role = Session["Role"]?.ToString();
+        string roleText = string.IsNullOrEmpty(role) ? "" : $" ({role})";
+    }
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary mb-4 shadow-sm">
+        <div class="container-fluid">
+            <!-- Brand -->
+            <a class="navbar-brand fw-bold" href="#">Lead Management</a>
+
+            <!-- Toggler (for mobile) -->
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
+                    aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+
+            <!-- Navbar links -->
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item">
+                        <a class="nav-link fw-bold" href="@Url.Action("Dashboard","Dashboard")">Dashboard</a>
+                    </li>
+                    <!-- Add more nav links here if needed -->
+                </ul>
+
+                <!-- User info and logout -->
+                <div class="d-flex align-items-center">
+                    <span class="navbar-text text-white me-3">
+                        @($"{userName}{roleText}")
+                    </span>
+                    <a href="@Url.Action("Logout","Account")" class="btn btn-outline-light btn-sm">Logout</a>
+                </div>
+            </div>
+        </div>
+    </nav>
+    <div class="container">
+
+        <!-- Dashboard Metrics -->
+        <div class="row mb-4">
+            <div class="col-md-3">
+                <div class="card text-white bg-primary card-metrics mb-3">
+                    <div class="card-body text-center">
+                        <h5>Total Leads</h5>
+                        <h2>@Model.Rows.Count</h2>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card text-white bg-success card-metrics mb-3">
+                    <div class="card-body text-center">
+                        <h5>New Leads</h5>
+                        <h2>@Model.AsEnumerable().Count(r => r["Status"].ToString() == "New")</h2>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card text-white bg-warning card-metrics mb-3">
+                    <div class="card-body text-center">
+                        <h5>Contacted</h5>
+                        <h2>@Model.AsEnumerable().Count(r => r["Status"].ToString() == "Contacted")</h2>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card text-white bg-danger card-metrics mb-3">
+                    <div class="card-body text-center">
+                        <h5>Lost</h5>
+                        <h2>@Model.AsEnumerable().Count(r => r["Status"].ToString() == "Lost")</h2>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Add Lead Button -->
+        @if (role == "Admin" || role == "Sales")
+        {
+            <a href="@Url.Action("Create","Leads")" class="btn btn-primary mb-3">
+                + Add Lead
+            </a>
+        }
+
+        <!-- Search & Filter -->
+        <div class="row mb-3">
+            <div class="col-md-6">
+                <input type="text" id="searchBox" class="form-control" placeholder="Search by name, email, phone..." />
+            </div>
+            <div class="col-md-4">
+                <select id="statusFilter" class="form-select">
+                    <option value="">All Status</option>
+                    <option value="New">New</option>
+                    <option value="Contacted">Contacted</option>
+                    <option value="Qualified">Qualified</option>
+                    <option value="Won">Won</option>
+                    <option value="Lost">Lost</option>
+                </select>
+            </div>
+        </div>
+
+        <!-- Leads Table -->
+        <div class="table-container">
+            <table class="table table-bordered table-striped table-hover align-middle">
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Email</th>
+                        <th>Phone</th>
+                        <th>Status</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (DataRow row in Model.Rows)
+                    {
+                        <tr class="lead-row"
+                            data-name="@row["Name"]"
+                            data-email="@row["Email"]"
+                            data-phone="@row["Phone"]"
+                            data-status="@row["Status"]">
+
+                            <td>@row["Name"]</td>
+                            <td>@row["Email"]</td>
+                            <td>@row["Phone"]</td>
+                            <td>
+                                <select class="form-select status-dropdown" data-id="@Convert.ToInt32(row["Id"])">
+                                    <option value="New" @(row["Status"].ToString() == "New" ? "selected" : "")>New</option>
+                                    <option value="Contacted" @(row["Status"].ToString() == "Contacted" ? "selected" : "")>Contacted</option>
+                                    <option value="Qualified" @(row["Status"].ToString() == "Qualified" ? "selected" : "")>Qualified</option>
+                                    <option value="Won" @(row["Status"].ToString() == "Won" ? "selected" : "")>Won</option>
+                                    <option value="Lost" @(row["Status"].ToString() == "Lost" ? "selected" : "")>Lost</option>
+                                </select>
+                            </td>
+                            <td>
+                                <button class="btn btn-danger btn-sm delete-btn" data-id="@Convert.ToInt32(row["Id"])">
+                                    Delete
+                                </button>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+
+    </div>
+
+    <script>
+        $(document).ready(function () {
+
+            // Status Update
+            $(document).on("change", ".status-dropdown", function () {
+                var leadId = $(this).data("id");
+                var newStatus = $(this).val();
+
+                $.ajax({
+                    url: '/Leads/UpdateStatus',
+                    type: 'POST',
+                    data: { id: leadId, status: newStatus },
+                    success: function (res) {
+                        if (!res.success) Swal.fire("Error", res.message, "error");
+                    },
+                    error: function () {
+                        Swal.fire("Error", "Server error ❌", "error");
+                    }
+                });
+            });
+
+            // Delete Lead
+            $(document).on("click", ".delete-btn", function () {
+                var button = $(this);
+                var leadId = button.data("id");
+
+                Swal.fire({
+                    title: 'Are you sure?',
+                    text: "This will delete the lead!",
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#d33',
+                    cancelButtonColor: '#3085d6',
+                    confirmButtonText: 'Yes, delete!'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        $.ajax({
+                            url: '/Leads/Delete',
+                            type: 'POST',
+                            data: { id: leadId },
+                            success: function (res) {
+                                if (res.success) {
+                                    button.closest("tr").remove();
+                                    Swal.fire("Deleted!", "Lead has been deleted.", "success");
+                                } else {
+                                    Swal.fire("Error", res.message, "error");
+                                }
+                            },
+                            error: function () {
+                                Swal.fire("Error", "Server error ❌", "error");
+                            }
+                        });
+                    }
+                });
+            });
+
+            // Search & Filter
+            function filterLeads() {
+                var searchText = $("#searchBox").val().toLowerCase();
+                var status = $("#statusFilter").val();
+
+                $(".lead-row").each(function () {
+                    var name = $(this).data("name").toLowerCase();
+                    var email = $(this).data("email").toLowerCase();
+                    var phone = $(this).data("phone").toLowerCase();
+                    var rowStatus = $(this).data("status");
+
+                    var matchSearch = name.includes(searchText) || email.includes(searchText) || phone.includes(searchText);
+                    var matchStatus = (status === "" || rowStatus === status);
+
+                    $(this).toggle(matchSearch && matchStatus);
+                });
+            }
+
+            $("#searchBox").on("keyup", filterLeads);
+            $("#statusFilter").on("change", filterLeads);
+
+        });
+    </script>
+
+</body>
+</html>

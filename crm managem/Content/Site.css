@@ -1,0 +1,40 @@
+﻿/* Set padding to keep content from hitting the edges */
+.body-content {
+    margin-top: 15px;
+    padding-left: 15px;
+    padding-right: 15px;
+}
+
+/* Override the default bootstrap behavior where horizontal description lists 
+   will truncate terms that are too long to fit in the left column 
+*/
+.dl-horizontal dt {
+    white-space: normal;
+}
+
+/* Set width on the form input elements since they're 100% wide by default */
+input,
+select,
+textarea {
+    max-width: 280px;
+}
+/* Hero Gradient */
+section.bg-primary {
+    background: linear-gradient(135deg, #667eea, #764ba2);
+}
+
+/* Feature Icons hover effect */
+.row i {
+    transition: transform 0.3s, color 0.3s;
+}
+
+    .row i:hover {
+        transform: scale(1.2);
+        color: #5a3fc0;
+    }
+
+/* Buttons hover */
+.btn-outline-light:hover {
+    background-color: #ffffff;
+    color: #667eea;
+}

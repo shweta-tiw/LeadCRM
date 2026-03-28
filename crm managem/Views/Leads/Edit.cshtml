@@ -1,0 +1,221 @@
+﻿@{
+    ViewBag.Title = "Dashboard";
+    Layout = null;
+}
+
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title>Dashboard - CRM</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" />
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            background: #f0f2f5;
+            color: #333;
+        }
+
+        /* Navbar */
+        .navbar {
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        /* Dashboard Cards */
+        .cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .card {
+            background: linear-gradient(145deg, #ffffff, #f0f0f0);
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.08);
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+            .card:hover {
+                transform: translateY(-8px);
+                box-shadow: 0 15px 30px rgba(0,0,0,0.15);
+            }
+
+            .card i {
+                font-size: 32px;
+                margin-bottom: 12px;
+                color: #4e73df;
+            }
+
+            .card h4 {
+                font-size: 16px;
+                color: #555;
+                margin-bottom: 10px;
+            }
+
+            .card h2 {
+                font-size: 32px;
+                font-weight: 700;
+            }
+
+        /* Chart Container */
+        .chart-container {
+            background: #fff;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.08);
+            margin-bottom: 40px;
+        }
+
+        /* Quick action buttons */
+        .dashboard-actions {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+            .dashboard-actions .btn {
+                margin: 5px;
+                font-size: 16px;
+                padding: 10px 22px;
+                border-radius: 10px;
+                transition: 0.3s;
+            }
+
+                .dashboard-actions .btn:hover {
+                    transform: scale(1.05);
+                }
+
+        /* Recent Leads Table */
+        .table-container {
+            background: #fff;
+            padding: 20px;
+            border-radius: 15px;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.08);
+        }
+
+        .table thead {
+            background: #4e73df;
+            color: #fff;
+        }
+
+        .table tbody tr:hover {
+            background: rgba(78,115,223,0.1);
+        }
+    </style>
+</head>
+<body>
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-light bg-white mb-4">
+        <div class="container">
+            <a class="navbar-brand fw-bold" href="@Url.Action("Dashboard","Dashboard")">CRM</a>
+            <div class="collapse navbar-collapse">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item"><a class="nav-link" href="@Url.Action("Index","Leads")">Manage Leads</a></li>
+                    <li class="nav-item"><a class="nav-link" href="@Url.Action("Create","Leads")">Add Lead</a></li>
+                    <li class="nav-item"><a class="nav-link" href="@Url.Action("Logout","Account")">Logout</a></li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container">
+        <!-- Quick Action Buttons -->
+        <div class="dashboard-actions">
+            <a href="@Url.Action("Create","Leads")" class="btn btn-primary"><i class="fas fa-plus"></i> Add Lead</a>
+            <a href="@Url.Action("Index","Leads")" class="btn btn-success"><i class="fas fa-users"></i> Manage Leads</a>
+        </div>
+
+        <!-- Metric Cards -->
+        <div class="cards">
+            <div class="card" onclick="window.location='@Url.Action("Index", "Leads")'">
+                <i class="fas fa-users"></i>
+                <h4>Total Leads</h4>
+                <h2>@ViewBag.TotalLeads</h2>
+            </div>
+            <div class="card" onclick="window.location='@Url.Action("Index", "Leads")?status=New'">
+                <i class="fas fa-user-plus"></i>
+                <h4>New Leads</h4>
+                <h2>@ViewBag.New</h2>
+            </div>
+            <div class="card" onclick="window.location='@Url.Action("Index", "Leads")?status=Contacted'">
+                <i class="fas fa-phone"></i>
+                <h4>Contacted</h4>
+                <h2>@ViewBag.Contacted</h2>
+            </div>
+            <div class="card" onclick="window.location='@Url.Action("Index", "Leads")?status=Won'">
+                <i class="fas fa-trophy"></i>
+                <h4>Won Leads</h4>
+                <h2>@ViewBag.Won</h2>
+            </div>
+            <div class="card" onclick="window.location='@Url.Action("Index", "Leads")?status=Lost'">
+                <i class="fas fa-times-circle"></i>
+                <h4>Lost Leads</h4>
+                <h2>@ViewBag.Lost</h2>
+            </div>
+        </div>
+
+        <!-- Lead Status Chart -->
+        <div class="chart-container">
+            <canvas id="leadChart"></canvas>
+        </div>
+
+        <!-- Recent Leads Table -->
+        <div class="table-container">
+            <h4 class="mb-3">Recent Leads</h4>
+            <table class="table table-hover table-bordered">
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Email</th>
+                        <th>Phone</th>
+                        <th>Status</th>
+                        <th>Created At</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (System.Data.DataRow row in ViewBag.RecentLeads)
+                    {
+                        <tr>
+                            <td>@row["Name"]</td>
+                            <td>@row["Email"]</td>
+                            <td>@row["Phone"]</td>
+                            <td>@row["Status"]</td>
+                            <td>@Convert.ToDateTime(row["CreatedAt"]).ToString("dd-MMM-yyyy")</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <script>
+        // Lead Chart
+        var ctx = document.getElementById('leadChart').getContext('2d');
+        var chart = new Chart(ctx, {
+            type: 'doughnut',
+            data: {
+                labels: ['New','Contacted','Won','Lost'],
+                datasets: [{
+                    label:'Lead Status',
+                    data: [@ViewBag.New,@ViewBag.Contacted,@ViewBag.Won,@ViewBag.Lost],
+                    backgroundColor: ['#f39c12','#3498db','#2ecc71','#e74c3c'],
+                    borderColor:'#fff',
+                    borderWidth:2
+                }]
+            },
+            options: {
+                responsive:true,
+                plugins:{
+                    legend:{ position:'bottom' },
+                    title:{ display:true, text:'Lead Status Distribution', font:{ size:18 } }
+                }
+            }
+        });
+    </script>
+</body>
+</html>

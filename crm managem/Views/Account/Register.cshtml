@@ -1,0 +1,159 @@
+﻿@model LeadManagementSystem.Models.User
+@{
+    Layout = null; // No sidebar/footer
+}
+
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title>Register - CRM</title>
+    <style>
+        /* Reset */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+        }
+
+        .register-card {
+            background: #ffffff;
+            width: 100%;
+            max-width: 450px;
+            padding: 40px 30px;
+            border-radius: 15px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.2);
+            text-align: center;
+        }
+
+            .register-card h2 {
+                font-size: 28px;
+                font-weight: 600;
+                margin-bottom: 25px;
+                color: #333;
+            }
+
+        .form-group {
+            text-align: left;
+            margin-bottom: 20px;
+        }
+
+        label {
+            font-weight: 600;
+            display: block;
+            margin-bottom: 5px;
+            color: #333;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 12px 15px;
+            font-size: 14px;
+            border-radius: 8px;
+            border: 1px solid #ccc;
+            transition: all 0.3s ease;
+        }
+
+            .form-control:focus {
+                border-color: #667eea;
+                box-shadow: 0 0 5px rgba(102,126,234,0.5);
+                outline: none;
+            }
+
+        .text-danger {
+            font-size: 12px;
+            color: #ff4d4f;
+            margin-top: 5px;
+        }
+
+        .btn {
+            padding: 12px 0;
+            font-weight: 600;
+            border-radius: 30px;
+            width: 48%;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: none;
+        }
+
+        .btn-primary {
+            background: #667eea;
+            color: #fff;
+        }
+
+            .btn-primary:hover {
+                background: #5a6dd0;
+            }
+
+        .btn-secondary {
+            background: #f0f0f0;
+            color: #333;
+            border: 1px solid #ccc;
+        }
+
+            .btn-secondary:hover {
+                background: #e0e0e0;
+            }
+
+        .btn-container {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 20px;
+        }
+
+        /* Optional: subtle hover effect on card */
+        .register-card:hover {
+            transform: translateY(-5px);
+            transition: all 0.3s ease;
+        }
+    </style>
+</head>
+<body>
+    <div class="register-card">
+        <h2>Create Your Account</h2>
+        @using (Html.BeginForm("Register", "Account", FormMethod.Post))
+        {
+            @Html.AntiForgeryToken()
+            @Html.ValidationSummary(true, "", new { @class = "text-danger" })
+
+            <div class="form-group">
+                @Html.LabelFor(m => m.FullName)
+                @Html.TextBoxFor(m => m.FullName, new { @class = "form-control", placeholder = "Enter your full name" })
+                @Html.ValidationMessageFor(m => m.FullName)
+            </div>
+
+            <div class="form-group">
+                @Html.LabelFor(m => m.Email)
+                @Html.TextBoxFor(m => m.Email, new { @class = "form-control", placeholder = "Enter your email" })
+                @Html.ValidationMessageFor(m => m.Email)
+            </div>
+
+            <div class="form-group">
+                @Html.LabelFor(m => m.Password)
+                @Html.PasswordFor(m => m.Password, new { @class = "form-control", placeholder = "Enter a password" })
+                @Html.ValidationMessageFor(m => m.Password)
+            </div>
+
+            <div class="form-group">
+                @Html.LabelFor(m => m.Role)
+                @Html.DropDownListFor(m => m.Role, new SelectList(new[] { "Admin", "Sales" }), "Select Role", new { @class = "form-control" })
+                @Html.ValidationMessageFor(m => m.Role)
+            </div>
+
+            <div class="btn-container">
+                <button type="submit" class="btn btn-primary">Register</button>
+                <a href="@Url.Action("Login", "Account")" class="btn btn-secondary">Login</a>
+            </div>
+        }
+    </div>
+</body>
+</html>
