@@ -3,3 +3,5 @@
 ################################################################################
 
 /crm managem/Controllers/SalesController.cs
+# Ignore sensitive config files
+Web.config
